@@ -1,0 +1,16 @@
+{
+  "name": "rpi-subscriptor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "Guillermo Monzó",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/iot": "^1.2.0",
+    "jsonwebtoken": "^8.5.0",
+    "lame": "^1.2.4",
+    "mqtt": "^3.0.0",
+    "speaker": "^0.4.2",
+    "yargs": "^14.0.0"
+  }
+}
