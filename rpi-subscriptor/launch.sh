@@ -1,0 +1,1 @@
+node index.js subscribe --cloudRegion=us-central1 --projectId=text2speech-254918  --registryId=my-registry --deviceId=my-node-device --privateKeyFile=./rsa_private.pem --algorithm=RS256 --mqttBridgePort=443
