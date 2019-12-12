@@ -1,9 +1,8 @@
-'use strict';
+"use strict";
 
-const fs = require('fs');
-const jwt = require('jsonwebtoken');
-const mqtt = require('mqtt');
-
+const fs = require("fs");
+const jwt = require("jsonwebtoken");
+const mqtt = require("mqtt");
 
 const subscribe = (
   deviceId,
@@ -15,8 +14,7 @@ const subscribe = (
   mqttBridgeHostname,
   mqttBridgePort
 ) => {
-
-  console.log('Starting subscriptor...');
+  console.log("Starting subscriptor...");
   console.log(deviceId);
   // const cloudRegion = 'us-central1';
   // const projectId = 'text2speech-254918';
@@ -35,10 +33,10 @@ const subscribe = (
     host: mqttBridgeHostname,
     port: mqttBridgePort,
     clientId: mqttClientId,
-    username: 'unused',
+    username: "unused",
     password: createJwt(projectId, privateKeyFile, algorithm),
-    protocol: 'mqtts',
-    secureProtocol: 'TLSv1_2_method',
+    protocol: "mqtts",
+    secureProtocol: "TLSv1_2_method"
   };
 
   // Create a client, and connect to the Google MQTT bridge.
@@ -50,38 +48,38 @@ const subscribe = (
   // QoS 0 (at most once delivery)
   client.subscribe(`/devices/${deviceId}/commands/#`, { qos: 0 });
 
-
-  client.on('connect', success => {
-    console.log('connect');
+  client.on("connect", success => {
+    console.log("connect");
     if (!success) {
-      console.log('Client not connected...');
+      console.log("Client not connected...");
     } else {
-      console.log('Client connected!');
+      console.log("Client connected!");
     }
   });
 
-  client.on('close', () => {
-    console.log('close');
+  client.on("close", () => {
+    console.log("close");
   });
 
-  client.on('error', err => {
-    console.log('error', err);
+  client.on("error", err => {
+    console.log("error", err);
   });
 
-  client.on('message', (topic, message) => {
-    let messageStr = 'Message received: ';
+  client.on("message", (topic, message) => {
+    let messageStr = "Message received: ";
     if (topic.startsWith(`/devices/${deviceId}/commands`)) {
-      messageStr = 'Command message received: ';
+      messageStr = "Command message received: ";
     }
 
-    messageStr += Buffer.from(message, 'base64').toString('ascii');
+    messageStr += Buffer.from(message, "base64").toString("ascii");
     console.log(messageStr);
+
+    playAudio();
   });
 
   // Once all of the messages have been published, the connection to Google Cloud
   // IoT will be closed and the process will exit. See the publishAsync method.
 };
-
 
 // Create a Cloud IoT Core JWT for the given project id, signed with the given
 // private key.
@@ -92,39 +90,36 @@ const createJwt = (projectId, privateKeyFile, algorithm) => {
   const token = {
     iat: parseInt(Date.now() / 1000),
     exp: parseInt(Date.now() / 1000) + 20 * 60, // 20 minutes
-    aud: projectId,
+    aud: projectId
   };
   const privateKey = fs.readFileSync(privateKeyFile);
   return jwt.sign(token, privateKey, { algorithm: algorithm });
 };
 
+const playAudio = audioContent => {
+  var buffer = Buffer.from(audioContent, "base64");
+  var lame = require("lame");
+  var Speaker = require("speaker");
 
-const playAudio = (audioContent) => {
+  const streamifier = require("streamifier");
 
-  //const fileContent = fs.readFileSync(audioContent);
-
-  //const buff = new Buffer(fileContent, 'base64');
-
-  var lame = require('lame');
-  var Speaker = require('speaker');
-
-  fs.createReadStream(audioContent).pipe(new lame.Decoder())
-    .on('format', function () {
-      console.error('format!');
+  streamifier
+    .createReadStream(buffer)
+    .pipe(new lame.Decoder())
+    .on("format", function() {
+      console.log("format!");
     })
-    .on('close', function () {
-      console.error('done!');
+    .on("close", function() {
+      console.log("done!");
     })
-    .on('error', function () {
-      console.error('error');
+    .on("error", function() {
+      console.log("error");
     })
-    .on('open', function () {
-      console.error('open');
+    .on("open", function() {
+      console.log("open");
     })
-    .pipe(new Speaker);
-
+    .pipe(new Speaker());
 };
-
 
 const { argv } = require(`yargs`)
   .command(
@@ -132,16 +127,13 @@ const { argv } = require(`yargs`)
     `Plays a audio file`,
     {
       audioContent: {
-        description:
-          'The audio file',
+        description: "The audio file",
         requiresArg: true,
-        type: 'string',
+        type: "string"
       }
     },
     opts => {
-      playAudio(
-        opts.audioContent
-      );
+      playAudio(opts.audioContent);
     }
   )
   .command(
@@ -151,53 +143,53 @@ const { argv } = require(`yargs`)
       projectId: {
         default: process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT,
         description:
-          'The Project ID to use. Defaults to the value of the GCLOUD_PROJECT or GOOGLE_CLOUD_PROJECT environment variables.',
+          "The Project ID to use. Defaults to the value of the GCLOUD_PROJECT or GOOGLE_CLOUD_PROJECT environment variables.",
         requiresArg: true,
-        type: 'string',
+        type: "string"
       },
       cloudRegion: {
-        default: 'us-central1',
-        description: 'GCP cloud region.',
+        default: "us-central1",
+        description: "GCP cloud region.",
         requiresArg: true,
-        type: 'string',
+        type: "string"
       },
       registryId: {
-        description: 'Cloud IoT registry ID.',
+        description: "Cloud IoT registry ID.",
         requiresArg: true,
         demandOption: true,
-        type: 'string',
+        type: "string"
       },
       deviceId: {
-        description: 'Cloud IoT device ID.',
+        description: "Cloud IoT device ID.",
         requiresArg: true,
         demandOption: true,
-        type: 'string',
+        type: "string"
       },
       privateKeyFile: {
-        description: 'Path to private key file.',
+        description: "Path to private key file.",
         requiresArg: true,
         demandOption: true,
-        type: 'string',
+        type: "string"
       },
       algorithm: {
-        description: 'Encryption algorithm to generate the JWT.',
+        description: "Encryption algorithm to generate the JWT.",
         requiresArg: true,
         demandOption: true,
-        choices: ['RS256', 'ES256'],
-        type: 'string',
+        choices: ["RS256", "ES256"],
+        type: "string"
       },
       mqttBridgeHostname: {
-        default: 'mqtt.googleapis.com',
-        description: 'MQTT bridge hostname.',
+        default: "mqtt.googleapis.com",
+        description: "MQTT bridge hostname.",
         requiresArg: true,
-        type: 'string',
+        type: "string"
       },
       mqttBridgePort: {
         default: 8883,
-        description: 'MQTT bridge port.',
+        description: "MQTT bridge port.",
         requiresArg: true,
-        type: 'number',
-      },
+        type: "number"
+      }
     },
     opts => {
       subscribe(
@@ -211,4 +203,7 @@ const { argv } = require(`yargs`)
         opts.mqttBridgePort
       );
     }
-  ).recommendCommands().help().strict().argv;
+  )
+  .recommendCommands()
+  .help()
+  .strict().argv;
