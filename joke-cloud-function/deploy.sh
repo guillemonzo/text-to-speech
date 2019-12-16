@@ -1,0 +1,1 @@
+gcloud functions deploy text2speech --runtime nodejs8 --trigger-http --region=europe-west1 --memory=128

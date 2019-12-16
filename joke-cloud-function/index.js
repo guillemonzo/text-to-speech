@@ -1,18 +1,20 @@
-const iot = require('@google-cloud/iot');
-const t2s = require('@google-cloud/text-to-speech');
-const cloudRegion = 'us-central1';
-const commandMessage = 'Hello World!';
-const projectId = 'text2speech-254918';
-const registryId = 'my-registry';
-const deviceId = 'my-node-device';
+const iot = require("@google-cloud/iot");
+const t2s = require("@google-cloud/text-to-speech");
+const cloudRegion = "us-central1";
+const projectId = "text2speech-254918";
+const registryId = "my-registry";
+const deviceId = "my-node-device";
 
-const binaryData = Buffer.from(commandMessage).toString('base64');
+exports.getAudioContent = (req, res) => {
+  getAudioContent();
+  res.send("Hello, World");
+};
 
-exports.helloWorld = async data => {
-
+exports.text2speech = async data => {
   try {
+    console.log("Getting audio content");
 
-    getAudioContent();
+    let audioContent = await getAudioContent();
 
     const iotClient = new iot.v1.DeviceManagerClient();
 
@@ -27,43 +29,38 @@ exports.helloWorld = async data => {
     // or you should specify a subfolder.
     const request = {
       name: formattedName,
-      binaryData: binaryData
+      binaryData: audioContent
     };
+    console.log("Sending command");
 
     await iotClient.sendCommandToDevice(request);
 
-    console.log('Sent command');
-
+    console.log("Sent command");
   } catch (err) {
     console.error(err);
   }
-
 };
 
 async function getAudioContent() {
-
-  console.log('Yii');
-
   const t2sClient = new t2s.TextToSpeechClient();
 
   // The text to synthesize
-  const text = 'Hello, world!';
+  const text = "Hello, world!";
 
   // Construct the request
   const request = {
     input: { text: text },
     // Select the language and SSML Voice Gender (optional)
-    voice: { languageCode: 'es-ES', name: 'es-ES-Standard-A' },
+    voice: { languageCode: "es-ES", name: "es-ES-Standard-A" },
     // Select the type of audio encoding
-    audioConfig: { audioEncoding: 'MP3' },
+    audioConfig: { audioEncoding: "MP3" }
   };
 
   // Performs the Text-to-Speech request
   const [response] = await t2sClient.synthesizeSpeech(request);
 
   // Return the binary audio content
-  console.log('Audio content returned! ' + response.audioContent);
+  console.log("Audio content returned!");
 
   return response.audioContent;
-
 }

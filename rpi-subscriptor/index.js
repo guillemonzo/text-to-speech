@@ -36,8 +36,11 @@ const subscribe = (
     username: "unused",
     password: createJwt(projectId, privateKeyFile, algorithm),
     protocol: "mqtts",
-    secureProtocol: "TLSv1_2_method"
+    secureProtocol: "TLSv1_2_method",
+    keepalive: 60
   };
+
+  //connect();
 
   // Create a client, and connect to the Google MQTT bridge.
   const client = mqtt.connect(connectionArgs);
@@ -66,15 +69,10 @@ const subscribe = (
   });
 
   client.on("message", (topic, message) => {
-    let messageStr = "Message received: ";
     if (topic.startsWith(`/devices/${deviceId}/commands`)) {
-      messageStr = "Command message received: ";
+      console.log("Message recieved");
+      playAudio(message);
     }
-
-    messageStr += Buffer.from(message, "base64").toString("ascii");
-    console.log(messageStr);
-
-    playAudio();
   });
 
   // Once all of the messages have been published, the connection to Google Cloud
